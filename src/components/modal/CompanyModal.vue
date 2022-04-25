@@ -8,7 +8,7 @@
       </q-card-section>
 
       <q-card-section class="q-pt-none">
-        <q-input v-model="data.name" label="Name" />
+        <q-input v-model="data.name" label="Name (*)" :error="!isValid.name" />
       </q-card-section>
       <q-card-section class="q-pt-none">
         <q-input v-model="data.address" label="Address" />
@@ -17,30 +17,26 @@
         <q-input v-model="data.country" label="Country" />
       </q-card-section>
       <q-card-section class="q-pt-none">
-        <q-input v-model="data.contact" label="Contact Number" />
+        <q-input
+          v-model="data.contact"
+          label="Contact Number"
+          :error="!isValid.contact"
+        />
       </q-card-section>
       <q-card-section class="q-pt-none">
-        <q-input v-model="data.website" label="Website" />
+        <q-input
+          v-model="data.website"
+          label="Website"
+          :error="!isValid.website"
+        />
       </q-card-section>
       <q-card-section class="q-pt-none">
-        <q-input v-model="data.email" label="Email" />
+        <q-input v-model="data.email" label="Email" :error="!isValid.email" />
       </q-card-section>
 
       <q-card-actions align="right">
-        <q-btn
-          flat
-          label="Cancel"
-          color="primary"
-          v-close-popup
-          @click="closeModal(false)"
-        />
-        <q-btn
-          flat
-          label="Save"
-          color="primary"
-          v-close-popup
-          @click="closeModal(true)"
-        />
+        <q-btn flat label="Cancel" color="primary" @click="closeModal(false)" />
+        <q-btn flat label="Save" color="primary" @click="closeModal(true)" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -61,6 +57,31 @@ const defaultData = {
   email: null,
 };
 
+const defaultValid = {
+  isValid: true,
+  name: true,
+  address: true,
+  country: true,
+  contact: true,
+  website: true,
+  email: true,
+};
+
+const phonePattern =
+  /^[(]{0,1}[0-9]{3}[)]{0,1}[-\s\.]{0,1}[0-9]{3}[-\s\.]{0,1}[0-9]{4}$/;
+
+var linkPattern = new RegExp(
+  "^(https?:\\/\\/)?" +
+    "((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|" +
+    "((\\d{1,3}\\.){3}\\d{1,3}))" +
+    "(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*" +
+    "(\\?[;&a-z\\d%_.~+=-]*)?" +
+    "(\\#[-a-z\\d_]*)?$",
+  "i"
+);
+
+const emailPattern =
+  /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
 export default defineComponent({
   name: "CompanyModal",
   props: {
@@ -80,11 +101,37 @@ export default defineComponent({
     return {
       visible: false,
       data: { ...defaultData },
+      isValid: { ...defaultValid },
     };
   },
   methods: {
     moment: function () {
       return moment();
+    },
+    validateData() {
+      let temp = this.data;
+      this.isValid = { ...defaultValid };
+      if (!temp.name || temp.name == "") {
+        this.isValid.name = false;
+        this.isValid.isValid = false;
+      }
+
+      if (temp.contact && !phonePattern.test(temp.contact)) {
+        this.isValid.contact = false;
+        this.isValid.isValid = false;
+      }
+
+      if (temp.website && !linkPattern.test(temp.website)) {
+        this.isValid.website = false;
+        this.isValid.isValid = false;
+      }
+
+      if (temp.email && !emailPattern.test(temp.email)) {
+        this.isValid.email = false;
+        this.isValid.isValid = false;
+      }
+
+      console.log("this.isValid", this.isValid);
     },
     resetData: function (flag) {
       this.data = flag
@@ -92,8 +139,14 @@ export default defineComponent({
           ? { ...this.modalData }
           : { ...defaultData }
         : { ...defaultData };
+
+      this.isValid = { ...defaultValid };
     },
     closeModal: function (flag) {
+      if (flag) {
+        this.validateData();
+        if (!this.isValid.isValid) return;
+      }
       this.hideModal({ ...this.data }, flag);
       this.resetData(false);
     },

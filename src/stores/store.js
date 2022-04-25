@@ -14,18 +14,23 @@ export const useAppStore = defineStore({
      */
     add(company) {
       let temp = [...this.companyList];
+      let newList;
+      console.log(company)
       if (company.id) {
-        temp.map((item) => {
+        newList = temp.map((item) => {
           if (item.id === company.id) {
+            console.log(item)
             item = company;
           }
           return item;
         })
       } else {
+        company.id = new Date().toString();
         temp.push(company);
       }
+      console.log(newList, temp)
       this.$patch({
-        companyList: temp,
+        companyList: newList || temp,
       })
       this.saveLocal();
     },

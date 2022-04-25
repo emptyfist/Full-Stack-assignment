@@ -8,8 +8,15 @@
       row-key="id"
       selection="multiple"
       v-model:selected="selected"
+      :filter="filter"
+      :filter-method="customFilter"
     >
       <template v-slot:top-right>
+        <q-input dense v-model="search" placeholder="Search">
+          <template v-slot:append>
+            <q-icon name="search" />
+          </template>
+        </q-input>
         <q-btn color="primary" label="Add" @click="showModal" size="10px" />
         <q-btn
           class="q-ml-sm"
@@ -121,7 +128,15 @@ export default defineComponent({
       selected: ref([]),
       modalVisible: ref(false),
       modalData: null,
+      search: "",
     };
+  },
+  computed: {
+    filter() {
+      return {
+        search: this.search,
+      };
+    },
   },
   methods: {
     showModal: function () {
@@ -146,6 +161,49 @@ export default defineComponent({
     editRow: function (data) {
       this.modalData = data.row;
       this.modalVisible = true;
+    },
+    containString(str1, str2) {
+      return str1.indexOf(str2) > -1;
+    },
+    customFilter(rows, terms) {
+      const filteredRows = rows.filter((row, i) => {
+        if (terms.search && terms.search !== "") {
+          console.log(row);
+          if (this.containString(row.name, terms.search)) return true;
+          if (
+            row.address &&
+            row.address !== "" &&
+            this.containString(row.address, terms.search)
+          )
+            return true;
+          if (
+            row.country &&
+            row.country !== "" &&
+            this.containString(row.country, terms.search)
+          )
+            return true;
+          if (
+            row.contact &&
+            row.contact !== "" &&
+            this.containString(row.contact, terms.search)
+          )
+            return true;
+          if (
+            row.website &&
+            row.website !== "" &&
+            this.containString(row.website, terms.search)
+          )
+            return true;
+          if (
+            row.email &&
+            row.email !== "" &&
+            this.containString(row.email, terms.search)
+          )
+            return true;
+          return false;
+        } else return true;
+      });
+      return filteredRows;
     },
   },
 });
