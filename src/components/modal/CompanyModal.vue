@@ -1,6 +1,6 @@
 <template>
   <q-dialog v-model="visible" persistent>
-    <q-card>
+    <q-card style="width: 700px; max-width: 80vw">
       <q-card-section>
         <div class="text-h6">
           {{ this.data.id ? "Edit Company" : "New Company" }}
